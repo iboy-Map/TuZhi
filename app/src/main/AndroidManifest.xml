@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.geopdfviewer.android">
+
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.MOUNT_UNMOUNT_FILESYSTEMS" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.RECORD_VIDEO" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+    <uses-permission android:name="android.permission.READ_PRIVILEGED_PHONE_STATE" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" /> <!-- Camera Feature 声明对camera feature的使用 -->
+    <uses-feature
+        android:glEsVersion="0x00020000"
+        android:required="true" />
+
+    <application
+        android:name=".MyApplication"
+        android:allowBackup="true"
+        android:hardwareAccelerated="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:largeHeap="true"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
+        <activity android:name=".FolkwayTabooShow"></activity>
+        <activity android:name=".FolkwayParticipantShow" />
+        <activity android:name=".FolkwayObjectShow" />
+        <activity android:name=".FolkwayMasterShow" />
+        <activity android:name=".FolkwayCeremonyShow" />
+        <activity android:name=".FolkwayFestivalShow" />
+        <activity android:name=".FolkwaysShow" />
+        <activity android:name=".VideoShow"
+            android:screenOrientation="portrait" ></activity>
+        <activity android:name=".Vedioshow" />
+        <activity
+            android:name=".MainInterface"
+            android:hardwareAccelerated="true"
+            android:label="@string/app_showname"
+            android:screenOrientation="portrait"
+            android:launchMode="singleTask" />
+        <activity
+            android:name=".select_page"
+            android:hardwareAccelerated="true"
+            android:label="图志"
+            android:launchMode="singleTask" />
+        <activity
+            android:name=".info_page"
+            android:label="地理信息显示页面" />
+        <activity
+            android:name=".singlepoi"
+            android:hardwareAccelerated="true"
+            android:label="单个POI点信息"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".pois"
+            android:hardwareAccelerated="true"
+            android:label="所有POI信息" />
+        <activity
+            android:name=".photoshow"
+            android:hardwareAccelerated="true"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".tapeshow"
+            android:hardwareAccelerated="true"
+            android:screenOrientation="portrait" />
+
+        <provider
+            android:name="android.support.v4.content.FileProvider"
+            android:authorities="com.android.tuzhi.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+
+        <service
+            android:name=".RecordTrail"
+            android:enabled="true"
+            android:exported="true" />
+
+        <service
+            android:name=".RecordingService"
+            android:enabled="true"
+            android:exported="true" />
+
+        <activity android:name=".register">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity android:name=".plqpoishow" />
+        <activity android:name=".Activity_FileManage" />
+        <activity android:name=".JZActivity" />
+        <activity
+            android:name=".HouseInfoWindow"
+            android:label="@string/title_activity_house_info_window"
+            android:theme="@style/AppTheme" />
+        <activity
+            android:name=".RightPersonInfoWindow"
+            android:label="@string/title_activity_right_person_info_window"
+            android:theme="@style/AppTheme" />
+        <activity
+            android:name=".ParcelInfoWindow"
+            android:label="@string/title_activity_parcel_info_window"
+            android:theme="@style/AppTheme" />
+    </application>
+
+</manifest>

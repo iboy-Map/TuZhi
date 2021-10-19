@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/back"
+        android:icon="@drawable/ic_arrow_back"
+        android:title="@string/BackBt"
+        app:showAsAction="always"/>
+    <item
+        android:id="@+id/queryLatLng"
+        android:icon="@drawable/ic_search"
+        android:title="@string/SimpleQueryBt"
+        app:showAsAction="never"/>
+    <item
+        android:id="@+id/info"
+        android:icon="@drawable/ic_info_black"
+        android:title="@string/InfoBt"
+        app:showAsAction="always"/>
+    <item
+        android:id="@+id/queryPOI"
+        android:icon="@drawable/ic_info_black"
+        android:title="@string/QueryAllPOIBt"
+        app:showAsAction="never"/>
+    <item
+        android:id="@+id/action_search"
+        android:title="@string/RedLineTip"
+        app:actionViewClass="android.support.v7.widget.SearchView"
+        app:showAsAction="always" />
+
+</menu>
