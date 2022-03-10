@@ -689,6 +689,7 @@ public class photoshow extends AppCompatActivity {
                         poi.setPhotonum(POIs.get(0).getPhotonum() + 1);
                         poi.updateAll("poic = ?", POIC);
                         MPHOTO mphoto = new MPHOTO();
+                        mphoto.setPdfic(POIs.get(0).getIc());//...
                         mphoto.setPoic(POIC);
                         mphoto.setPath(imageuri);
                         mphoto.setTime(simpleDateFormat.format(date));

@@ -2,6 +2,7 @@ package com.geopdfviewer.android;
 
 import android.app.SearchManager;
 import android.app.Service;
+import android.arch.lifecycle.LifecycleOwner;
 import android.content.ActivityNotFoundException;
 import android.content.ClipboardManager;
 import android.content.Context;
@@ -36,6 +37,8 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Message;
 import android.os.SystemClock;
 import android.provider.MediaStore;
 import android.provider.OpenableColumns;
@@ -1988,6 +1991,8 @@ public class MainInterface extends AppCompatActivity implements OnPageChangeList
         if (isMessure && showMode == TuzhiEnum.NOCENTERMODE) {
             parseAndrawMessure(messure_pts, canvas);
         }*/
+
+        //在这绘制坐标定位信息
             drawMLocPoint(canvas);
 
             if (isMessure) {
@@ -2047,8 +2052,9 @@ public class MainInterface extends AppCompatActivity implements OnPageChangeList
                         }*/
             //locError(Float.toString(pageHeight) + "%%" + Float.toString(pdfView.getZoom() * 764));
             //canvas.drawLine(b_bottom_x * ratio_width, (m_top_y - b_bottom_y) * ratio_height, b_top_x * ratio_width, (m_top_y - b_top_y) * ratio_height, paint);
-
+            trails = LitePal.findAll(Trail.class);
             if (isLocateEnd && !m_cTrail.isEmpty() || showTrail) {
+                Log.w("轨迹数","：" + trails.size());
                 for (int ii = 0; ii < trails.size(); ii++) {
                     String str1 = trails.get(ii).getPath();
                     String[] TrailString = str1.split(" ");
@@ -3347,9 +3353,12 @@ public class MainInterface extends AppCompatActivity implements OnPageChangeList
     //解析白板字符串并绘制
     private void parseAndrawLinesforWhiteBlank(Canvas canvas) {
         int size = geometry_whiteBlanks.size();
+        Log.w("白板测试1",":" + size);
+        if (size > 0){  //白板新改的 去除下面的if(canDrawLine())
         for (int k = 0; k < size; ++k) {
-            if (canDrawLine(geometry_whiteBlanks.get(k).getMaxlat(), geometry_whiteBlanks.get(k).getMinlat(), geometry_whiteBlanks.get(k).getMaxlng(), geometry_whiteBlanks.get(k).getMinlng()))
-            {
+            Log.w("白板测试4",":" + geometry_whiteBlanks.get(k).getMaxlat());
+            //if (canDrawLine(geometry_whiteBlanks.get(k).getMaxlat(), geometry_whiteBlanks.get(k).getMinlat(), geometry_whiteBlanks.get(k).getMaxlng(), geometry_whiteBlanks.get(k).getMinlng()))
+
             locError("geometry: " + geometry_whiteBlanks.get(k).getM_lines());
             Paint paint7 = new Paint();
             paint7.setStrokeWidth(3);
@@ -3357,6 +3366,7 @@ public class MainInterface extends AppCompatActivity implements OnPageChangeList
             paint7.setStyle(Paint.Style.STROKE);
             if (isWhiteBlank && !geometry_whiteBlanks.get(k).getM_lines().isEmpty()) {
 
+                Log.w("白板测试2","："+ geometry_whiteBlanks.get(k).getM_lines());
                 geometry_whiteBlanks.get(k).setM_lines(geometry_whiteBlanks.get(k).getM_lines());
                 String[] pts = geometry_whiteBlanks.get(k).getM_lines().split(" ");
                 float[] mpts;
@@ -4376,7 +4386,7 @@ public class MainInterface extends AppCompatActivity implements OnPageChangeList
                 WindowManager.LayoutParams lp = getWindow().getAttributes();
                 lp.alpha = 1.0f;
                 getWindow().setAttributes(lp);
-                locHere_fab.setVisibility(View.GONE);
+                locHere_fab.setVisibility(View.VISIBLE);//修改过，之前是Gone
             }
         });
         //popupWindow出现屏幕变为半透明
@@ -4490,6 +4500,7 @@ public class MainInterface extends AppCompatActivity implements OnPageChangeList
                 lp.alpha = 1.0f;
                 getWindow().setAttributes(lp);
                 locHere_fab.setVisibility(View.VISIBLE);
+                floatingActionsMenu.setVisibility(View.VISIBLE);//显示fam
             }
         });
         //popupWindow OnTouchListener
@@ -4515,65 +4526,77 @@ public class MainInterface extends AppCompatActivity implements OnPageChangeList
                         lines.setColor(color_Whiteblank);
                         lines.setLines(whiteBlankPt);
                         lines.setMmid(size);
-                        float[] spatialIndex = DataUtil.getSpatialIndex(whiteBlankPt);
-                        lines.setMaxlat(spatialIndex[0]);
-                        lines.setMinlat(spatialIndex[1]);
-                        lines.setMaxlng(spatialIndex[2]);
-                        lines.setMinlng(spatialIndex[3]);
-                        lines.save();
-                        geometry_WhiteBlank geometry_whiteBlank = new geometry_WhiteBlank(ic, whiteBlankPt, color_Whiteblank, spatialIndex[0], spatialIndex[2], spatialIndex[1], spatialIndex[3]);
-                        geometry_whiteBlanks.add(geometry_whiteBlank);
-                        mLastPTForWhiteBlank = null;
+                        //加了个try catch语句，控制地图外的点击闪退
+                        try {
+                            float[] spatialIndex = DataUtil.getSpatialIndex(whiteBlankPt);
+                            lines.setMaxlat(spatialIndex[0]);
+                            lines.setMinlat(spatialIndex[1]);
+                            lines.setMaxlng(spatialIndex[2]);
+                            lines.setMinlng(spatialIndex[3]);
+                            lines.save();
+                            geometry_WhiteBlank geometry_whiteBlank = new geometry_WhiteBlank(ic, whiteBlankPt, color_Whiteblank, spatialIndex[0], spatialIndex[2], spatialIndex[1], spatialIndex[3]);
+                            geometry_whiteBlanks.add(geometry_whiteBlank);
+                            mLastPTForWhiteBlank = null;
+                        }
+                        catch (Exception e)
+                        {
+                            Toast.makeText(MainInterface.this,"请勿单独点击地图范围外的地方",Toast.LENGTH_LONG).show();
+                        }
+
                         break;
                 }
 
                 PointF pt = new PointF(event.getRawX(), event.getRawY());
                 pt = getGeoLocFromPixL(pt);
-                locError("RawX : " + pt.x + "; RawY : " + pt.y);
-                //pt_last = pt_current;
-                //pt_current = pt;
-                //pdfView.zoomWithAnimation(c_zoom);
+                if (pt.x != 0 && pt.y != 0) { //不设置导致超出地图的点绘制混乱
+                    locError("RawX : " + pt.x + "; RawY : " + pt.y);
+                    //pt_last = pt_current;
+                    //pt_current = pt;
+                    //pdfView.zoomWithAnimation(c_zoom);
                 /*if (event.getRawY() >= height - 100 && event.getRawY() <= height && event.getRawX() >= 50 && event.getRawX() <= 150){
                     popupWindow.dismiss();
                     whiteblank.setImageResource(R.drawable.ic_brush_black_24dp);
                 }*/
-                double mDis = -1;
-                try {
-                    if(mLastPTForWhiteBlank != null) {
-                        mDis = LatLng.algorithm(pt.y, pt.x, mLastPTForWhiteBlank.y, mLastPTForWhiteBlank.x);
+                    double mDis = -1;
+                    try {
+                        if (mLastPTForWhiteBlank != null) {
+                            mDis = LatLng.algorithm(pt.y, pt.x, mLastPTForWhiteBlank.y, mLastPTForWhiteBlank.x);
 
-                        locError("RawX" + mDis);
+                            locError("RawX" + mDis);
+                        }
+                    } catch (Exception e) {
+                        locError("RawX" + e.toString());
                     }
-                }
-                catch (Exception e)
-                {
-                    locError("RawX" + e.toString());
-                }
-                //if (isWhiteBlank && ( mDis >= 0.2 || mDis == -1)) {//设置点位基础抽稀
-                if (isWhiteBlank) {//不设置点位基础抽稀
-                    //locError("RawX" + LatLng.algorithm(pt.y, pt.x, mLastPTForWhiteBlank.y, mLastPTForWhiteBlank.x));
-                    mLastPTForWhiteBlank = pt;
-                    num_whiteBlankPt++;
-                    if (num_whiteBlankPt == 1) {
-                        whiteBlankPt = Float.toString(pt.x) + " " + Float.toString(pt.y);
-                    } else if (num_whiteBlankPt == 2) {
-                        whiteBlankPt = whiteBlankPt + " " + Float.toString(pt.x) + " " + Float.toString(pt.y);
-                        //setTitle("正在测量");
-                        pdfView.zoomWithAnimation(c_zoom);
-                        //locError(Double.toString(algorithm(poi111.y, poi111.x, poi222.y, poi222.x)));
-                        //Toast.makeText(MainInterface.this, "距离为" + Double.toString(distanceSum) + "米", Toast.LENGTH_LONG).show();
-                    } else {
-                        whiteBlankPt = whiteBlankPt + " " + Float.toString(pt.x) + " " + Float.toString(pt.y);
-                        //setTitle("正在测量");
-                        pdfView.zoomWithAnimation(c_zoom);
-                        //Toast.makeText(MainInterface.this, "距离为" + Double.toString(distanceSum) + "米", Toast.LENGTH_LONG).show();
+                    //if (isWhiteBlank && ( mDis >= 0.2 || mDis == -1)) {//设置点位基础抽稀
+                    if (isWhiteBlank) {//不设置点位基础抽稀
+                        //locError("RawX" + LatLng.algorithm(pt.y, pt.x, mLastPTForWhiteBlank.y, mLastPTForWhiteBlank.x));
+                        mLastPTForWhiteBlank = pt;
+                        num_whiteBlankPt++;
+                        if (num_whiteBlankPt == 1) {
+                            whiteBlankPt = Float.toString(pt.x) + " " + Float.toString(pt.y);
+                        } else if (num_whiteBlankPt == 2) {
+                            whiteBlankPt = whiteBlankPt + " " + Float.toString(pt.x) + " " + Float.toString(pt.y);
+                            //setTitle("正在测量");
+                            pdfView.zoomWithAnimation(c_zoom);
+                            //locError(Double.toString(algorithm(poi111.y, poi111.x, poi222.y, poi222.x)));
+                            //Toast.makeText(MainInterface.this, "距离为" + Double.toString(distanceSum) + "米", Toast.LENGTH_LONG).show();
+                        } else {
+                            whiteBlankPt = whiteBlankPt + " " + Float.toString(pt.x) + " " + Float.toString(pt.y);
+                            //setTitle("正在测量");
+                            pdfView.zoomWithAnimation(c_zoom);
+                            //Toast.makeText(MainInterface.this, "距离为" + Double.toString(distanceSum) + "米", Toast.LENGTH_LONG).show();
+                        }
                     }
-
+                    //return true;
                 }
-
+//                else  //如下设置可使点击白板外部不会闪退
+//                {
+//                    return false;
+//                }
                 return true;
             }
         });
+
         //popupWindow出现屏幕变为半透明
         WindowManager.LayoutParams lp = getWindow().getAttributes();
         lp.alpha = 1f;
@@ -5751,6 +5774,10 @@ public class MainInterface extends AppCompatActivity implements OnPageChangeList
 
     //坐标监听器
     protected final LocationListener locationListener = new LocationListener() {
+
+        /**
+         * 位置信息变化时触发
+         */
         @Override
         public void onLocationChanged(Location location) {
             //Log.d(TAG, "Location changed to: " + getLocationInfo(location));
@@ -5765,18 +5792,24 @@ public class MainInterface extends AppCompatActivity implements OnPageChangeList
         public void onStatusChanged(String provider, int status, Bundle extras) {
             Log.d(TAG, "onStatusChanged() called with " + "provider = [" + provider + "], status = [" + status + "], extras = [" + extras + "]");
             switch (status) {
+                //GPS状态为可见时
                 case LocationProvider.AVAILABLE:
                     Log.i(TAG, "AVAILABLE");
                     break;
+                //GPS状态为服务区外时
                 case LocationProvider.OUT_OF_SERVICE:
                     Log.i(TAG, "OUT_OF_SERVICE");
                     break;
+                //GPS状态为暂停服务时
                 case LocationProvider.TEMPORARILY_UNAVAILABLE:
                     Log.i(TAG, "TEMPORARILY_UNAVAILABLE");
                     break;
             }
         }
 
+        /**
+         * GPS开启时触发
+         */
         @Override
         public void onProviderEnabled(String provider) {
             Log.d(TAG, "onProviderEnabled() called with " + "provider = [" + provider + "]");
@@ -5789,6 +5822,9 @@ public class MainInterface extends AppCompatActivity implements OnPageChangeList
             }
         }
 
+        /**
+         * GPS禁用时触发
+         */
         @Override
         public void onProviderDisabled(String provider) {
             Log.d(TAG, "onProviderDisabled() called with " + "provider = [" + provider + "]");
@@ -6058,14 +6094,6 @@ public class MainInterface extends AppCompatActivity implements OnPageChangeList
         type1_checkbox = (CheckBox) findViewById(R.id.type1_poiLayer);
         type2_checkbox = (CheckBox) findViewById(R.id.type2_poiLayer);
         type3_checkbox = (CheckBox) findViewById(R.id.type3_poiLayer);
-        CheckBox mzxyCheckbox = findViewById(R.id.mzxy_poiLayer);
-        mzxyCheckbox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                showMZXYPoint = b;
-                pdfView.zoomWithAnimation(c_zoom);
-            }
-        });
         trailLayerBt.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -8340,14 +8368,6 @@ public class MainInterface extends AppCompatActivity implements OnPageChangeList
         type1_checkbox = (CheckBox) findViewById(R.id.type1_poiLayer);
         type2_checkbox = (CheckBox) findViewById(R.id.type2_poiLayer);
         type3_checkbox = (CheckBox) findViewById(R.id.type3_poiLayer);
-        CheckBox mzxyCheckbox = findViewById(R.id.mzxy_poiLayer);
-        mzxyCheckbox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                showMZXYPoint = b;
-                pdfView.zoomWithAnimation(c_zoom);
-            }
-        });
         trailLayerBt.setVisibility(View.VISIBLE);
         whiteBlankLayerBt.setVisibility(View.VISIBLE);
         centerPointModeBt.setVisibility(View.VISIBLE);
@@ -8355,7 +8375,6 @@ public class MainInterface extends AppCompatActivity implements OnPageChangeList
         type1_checkbox.setVisibility(View.VISIBLE);
         type2_checkbox.setVisibility(View.VISIBLE);
         type3_checkbox.setVisibility(View.VISIBLE);
-        mzxyCheckbox.setVisibility(View.VISIBLE);
     }
 
     private void RemoveAllCheckbox(){
@@ -8366,14 +8385,6 @@ public class MainInterface extends AppCompatActivity implements OnPageChangeList
         type1_checkbox = (CheckBox) findViewById(R.id.type1_poiLayer);
         type2_checkbox = (CheckBox) findViewById(R.id.type2_poiLayer);
         type3_checkbox = (CheckBox) findViewById(R.id.type3_poiLayer);
-        CheckBox mzxyCheckbox = findViewById(R.id.mzxy_poiLayer);
-        mzxyCheckbox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                showMZXYPoint = b;
-                pdfView.zoomWithAnimation(c_zoom);
-            }
-        });
         trailLayerBt.setVisibility(View.GONE);
         whiteBlankLayerBt.setVisibility(View.GONE);
         centerPointModeBt.setVisibility(View.GONE);
@@ -8381,8 +8392,37 @@ public class MainInterface extends AppCompatActivity implements OnPageChangeList
         type1_checkbox.setVisibility(View.GONE);
         type2_checkbox.setVisibility(View.GONE);
         type3_checkbox.setVisibility(View.GONE);
-        mzxyCheckbox.setVisibility(View.GONE);
     }
+
+    private void ParseTrails(){
+        trails = LitePal.findAll(Trail.class);
+        //Log.w(TAG, "ParseTrails: " + trails.size());
+        for (int i = 0; i < trails.size(); i++) {
+            //Log.w(TAG, "ParseTrails: " + trails.get(i).getPath());
+            if (trails.get(i).getPath().contains("0.0 0.0"))
+            {
+                //Log.w(TAG, "ParseTrails: " + i + "已删除");
+                LitePal.deleteAll(Trail.class, "name = ?", trails.get(i).getName());
+                trails = LitePal.findAll(Trail.class);
+            }
+        }
+    }
+
+    public static MainInterface instance = null;
+    public static final int UPDATE_TEXT = 1;
+    public Handler handler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+                case UPDATE_TEXT:
+                    Log.w("11111111", "handleMessage: " );
+                    Log.w(TAG, "handleMessage: " + "当前有" + LitePal.findAll(Trail.class).size() + "条轨迹");
+
+                    //在这里更新轨迹字符串
+                    ParseTrails();
+            }
+        }
+    };
 
     private void initWidget() {
         FloatingActionButton OutputFab = (FloatingActionButton) findViewById(R.id.outputData_MainInterface);
@@ -8598,6 +8638,7 @@ public class MainInterface extends AppCompatActivity implements OnPageChangeList
         whiteBlank_fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                floatingActionsMenu.setVisibility(View.GONE);
                 if (!isOpenWhiteBlank) {
                     isOpenWhiteBlank = true;
                     //whiteBlank_fab.setImageResource(R.drawable.ic_cancel_black_24dp);
@@ -8736,8 +8777,8 @@ public class MainInterface extends AppCompatActivity implements OnPageChangeList
                     isDrawType = TuzhiEnum.NONE_DRAW_TYPE;
                     isDrawTrail = TuzhiEnum.NONE_DRAW_TYPE;
                     isLocateEnd = true;
-                    recordTrail(last_x, last_y);
-                    locError(m_cTrail);
+                    //recordTrail(last_x, last_y);
+                    //locError(m_cTrail);
                     invalidateOptionsMenu();
                     Intent stop_mService = new Intent(MainInterface.this, RecordTrail.class);
                     stopService(stop_mService);
@@ -8923,19 +8964,28 @@ public class MainInterface extends AppCompatActivity implements OnPageChangeList
             @Override
             public void onClick(View v) {
 
+                getSharedPreferences("sp_name_audio", MODE_PRIVATE)
+                        .edit().clear()
+                        .apply();
+
                 final RecordAudioDialogFragment fragment = RecordAudioDialogFragment.newInstance();
                 fragment.show(getSupportFragmentManager(),RecordAudioDialogFragment.class.getSimpleName());
+
+                //不准外部点击取消
+                fragment.setCancelable(false);
 
                 fragment.setOnCancelListener(new RecordAudioDialogFragment.OnAudioCancelListener() {
                     @Override
                     public void onCancel() {
-                        fragment.dismiss();
 
+                        fragment.dismiss();
                         SharedPreferences prefTape = getSharedPreferences("sp_name_audio",MODE_PRIVATE);
                         String TapePath = prefTape.getString("audio_path","");
                         Log.w("audio_path: ",TapePath);
                         Uri uri = Uri.parse(TapePath);
 
+                        //没有录音就不跳出类型框
+                        if (TapePath.contains(".mp3")){
                         AlertDialog.Builder builder = new AlertDialog.Builder(MainInterface.this);
                         builder.setTitle("提示");
                         builder.setMessage("请选择你要添加的图层");
@@ -8957,7 +9007,10 @@ public class MainInterface extends AppCompatActivity implements OnPageChangeList
                                 AddTape(uri, 2);
                             }
                         });
+
+                        builder.setCancelable(false);
                         builder.show();
+                        }
                     }
                 });
 
@@ -9285,6 +9338,10 @@ public class MainInterface extends AppCompatActivity implements OnPageChangeList
             for (Lines_WhiteBlank line : lines) {
                 geometry_WhiteBlank geometry_whiteBlank = new geometry_WhiteBlank(line.getIc(), line.getLines(), line.getColor(), line.getMaxlat(), line.getMaxlng(), line.getMinlat(), line.getMinlng());
                 geometry_whiteBlanks.add(geometry_whiteBlank);
+            }
+            for(int i = 0;i<geometry_whiteBlanks.size();i++)
+            {
+                Log.w("白板测试3",":"+geometry_whiteBlanks.get(i).getM_lines());
             }
         }
     }
@@ -9811,6 +9868,7 @@ public class MainInterface extends AppCompatActivity implements OnPageChangeList
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_interface);
 
+        instance = this;
 
         //AddData();
         //Toast.makeText(this, "locate here", Toast.LENGTH_SHORT).show();

@@ -164,7 +164,11 @@ public class VideoShow extends AppCompatActivity {
                         Toast.makeText(MyApplication.getContext(), R.string.TakeTapeError1, Toast.LENGTH_LONG).show();
                     }*/
                     // TODO 2021/1/26 完成点击视频后的播放模块
-                    showPopueWindowForPhoto(path);
+                    //showPopueWindowForPhoto(path);//老版本视频popwindow
+                    //Intent intent1 = new Intent(VideoShow.this,VideoActivity.class);//SurfaceView播放
+                    Intent intent1 = new Intent(VideoShow.this, com.geopdfviewer.android.VideoView.class);
+                    intent1.putExtra("path",path);
+                    startActivity(intent1);
 
                 }
                 Log.w(TAG, "onItemClick: " + deletePath );
@@ -180,8 +184,9 @@ public class VideoShow extends AppCompatActivity {
         Log.w(TAG, "showPopueWindowForPhoto: " + path);
         //File outputImage = new File(path);
         //
-
-        videoView.setVideoPath(path);//setVideoURI(Uri.parse(uriString));
+        //Uri uriString = Uri.parse(path);
+        videoView.setVideoPath(path);
+        //videoView.setVideoURI(Uri.parse(path));
         videoView.start();
 
         //获取屏幕宽高
@@ -644,6 +649,7 @@ public class VideoShow extends AppCompatActivity {
             poi.setPhotonum(POIs.get(0).getVedionum() + 1);
             poi.updateAll("poic = ?", POIC);
             MVEDIO mvedio = new MVEDIO();
+            mvedio.setPdfic(POIs.get(0).getIc());//@@@@漏掉的一行
             mvedio.setPoic(POIC);
             mvedio.setPath(path);
             mvedio.setTime(simpleDateFormat.format(date));
@@ -804,6 +810,7 @@ public class VideoShow extends AppCompatActivity {
                     poi.setPhotonum(POIs.get(0).getVedionum() + 1);
                     poi.updateAll("poic = ?", POIC);
                     MVEDIO mvedio = new MVEDIO();
+                    mvedio.setPdfic(POIs.get(0).getIc());//@@@@漏掉的一行
                     mvedio.setPoic(POIC);
                     mvedio.setPath(imageuri1);
                     mvedio.setTime(simpleDateFormat.format(date));

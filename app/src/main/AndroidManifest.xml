@@ -29,22 +29,26 @@
         android:largeHeap="true"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".FolkwayTabooShow"></activity>
+
+        <activity android:name=".FolkwayTabooShow" />
         <activity android:name=".FolkwayParticipantShow" />
         <activity android:name=".FolkwayObjectShow" />
         <activity android:name=".FolkwayMasterShow" />
         <activity android:name=".FolkwayCeremonyShow" />
         <activity android:name=".FolkwayFestivalShow" />
         <activity android:name=".FolkwaysShow" />
-        <activity android:name=".VideoShow"
-            android:screenOrientation="portrait" ></activity>
+        <activity android:name=".VideoActivity"/>
+        <activity android:name=".VideoView"/>
+        <activity
+            android:name=".VideoShow"
+            android:screenOrientation="portrait" />
         <activity android:name=".Vedioshow" />
         <activity
             android:name=".MainInterface"
             android:hardwareAccelerated="true"
             android:label="@string/app_showname"
-            android:screenOrientation="portrait"
-            android:launchMode="singleTask" />
+            android:launchMode="singleTask"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".select_page"
             android:hardwareAccelerated="true"
@@ -85,7 +89,6 @@
             android:name=".RecordTrail"
             android:enabled="true"
             android:exported="true" />
-
         <service
             android:name=".RecordingService"
             android:enabled="true"

@@ -282,9 +282,14 @@ public class tapeshow extends AppCompatActivity {
                 break;
             case R.id.add_pois:
                 try {
+
+                    getSharedPreferences("sp_name_audio", MODE_PRIVATE)
+                            .edit().clear()
+                            .apply();
+
                     final RecordAudioDialogFragment fragment = RecordAudioDialogFragment.newInstance();
                     fragment.show(getSupportFragmentManager(),RecordAudioDialogFragment.class.getSimpleName());
-
+                    fragment.setCancelable(false);
                     fragment.setOnCancelListener(new RecordAudioDialogFragment.OnAudioCancelListener() {
                         @Override
                         public void onCancel() {
@@ -294,21 +299,23 @@ public class tapeshow extends AppCompatActivity {
                             String TapePath = prefTape.getString("audio_path","");
 
                             Log.w("audio_path_singlepoi: ",TapePath);
-                            Uri uri = Uri.parse(TapePath);
-                            List<POI> POIs = LitePal.where("poic = ?", POIC).find(POI.class);
-                            POI poi = new POI();
-                            poi.setTapenum(POIs.get(0).getTapenum() + 1);
-                            SimpleDateFormat simpleDateFormat = new SimpleDateFormat(tapeshow.this.getResources().getText(R.string.DateAndTime).toString());
-                            Date date = new Date(System.currentTimeMillis());
-                            poi.updateAll("poic = ?", POIC);
-                            MTAPE mtape = new MTAPE();
-                            mtape.setPath(TapePath);
-                            mtape.setPdfic(POIs.get(0).getIc());
-                            mtape.setPoic(POIC);
-                            mtape.setTime(simpleDateFormat.format(date));
-                            mtape.save();
-                            invalidateOptionsMenu();
-                            refreshCardFromPOI();
+                            if (!TapePath.equals("")){
+                                Uri uri = Uri.parse(TapePath);
+                                List<POI> POIs = LitePal.where("poic = ?", POIC).find(POI.class);
+                                POI poi = new POI();
+                                poi.setTapenum(POIs.get(0).getTapenum() + 1);
+                                SimpleDateFormat simpleDateFormat = new SimpleDateFormat(tapeshow.this.getResources().getText(R.string.DateAndTime).toString());
+                                Date date = new Date(System.currentTimeMillis());
+                                poi.updateAll("poic = ?", POIC);
+                                MTAPE mtape = new MTAPE();
+                                mtape.setPath(TapePath);
+                                mtape.setPdfic(POIs.get(0).getIc());
+                                mtape.setPoic(POIC);
+                                mtape.setTime(simpleDateFormat.format(date));
+                                mtape.save();
+                                invalidateOptionsMenu();
+                                refreshCardFromPOI();
+                            }
                         }
                     });
 //                    Intent intent = new Intent(MediaStore.Audio.Media.RECORD_SOUND_ACTION);

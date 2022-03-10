@@ -11,6 +11,7 @@ import android.location.LocationProvider;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.Message;
 import android.provider.Settings;
 import android.util.Log;
 import android.widget.Toast;
@@ -21,6 +22,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import static com.geopdfviewer.android.MainInterface.UPDATE_TEXT;
 
 /**
  * 路径记录的后台服务类
@@ -116,20 +118,28 @@ public class RecordTrail extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        Log.w(TAG, "onDestroy: " );
+        Log.w(TAG, "onDestroy: ");
         isLocateEnd = true;
         recordTrail(last_x, last_y);
-        Trail trail = new Trail();
-        List<Trail> trails = LitePal.findAll(Trail.class);
-        trail.setIc(m_ic);
-        trail.setName("路径" + Integer.toString(trails.size() + 1));
-        trail.setPath(m_cTrail);
-        float[] spatialIndex = DataUtil.getSpatialIndex(m_cTrail);
-        trail.setMaxlat(spatialIndex[0]);
-        trail.setMinlat(spatialIndex[1]);
-        trail.setMaxlng(spatialIndex[2]);
-        trail.setMinlng(spatialIndex[3]);
-        trail.save();
+        if (m_cTrail.trim().length() > 0) {
+            Trail trail = new Trail();
+            List<Trail> trails = LitePal.findAll(Trail.class);
+            trail.setIc(m_ic);
+            trail.setName("路径" + Integer.toString(trails.size() + 1));
+            trail.setPath(m_cTrail);
+            float[] spatialIndex = DataUtil.getSpatialIndex(m_cTrail);
+            trail.setMaxlat(spatialIndex[0]);
+            trail.setMinlat(spatialIndex[1]);
+            trail.setMaxlng(spatialIndex[2]);
+            trail.setMinlng(spatialIndex[3]);
+            trail.save();
+
+            Message message = new Message();
+            message.what = UPDATE_TEXT;
+            MainInterface.instance.handler.sendMessage(message);
+        } else {
+            Toast.makeText(RecordTrail.this, "当前轨迹为空，可能是没有GPS信号", Toast.LENGTH_LONG).show();
+        }
     }
 
     public static int appearNumber(String srcText, String findText) {

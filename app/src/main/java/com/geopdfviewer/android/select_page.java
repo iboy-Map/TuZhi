@@ -26,6 +26,7 @@ import android.provider.ContactsContract;
 import android.provider.MediaStore;
 import android.provider.OpenableColumns;
 import android.provider.Settings;
+import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
@@ -130,67 +131,72 @@ public class select_page extends AppCompatActivity implements OnPageChangeListen
 
     @Override
     public void onBackPressed() {
-        if (!ParentNodeName.equals("")) {
-            FloatingActionButton floatingActionButton = (FloatingActionButton) findViewById(R.id.BackFloatingActionButton);
-            floatingActionButton.setElevation(100);
-            List<ElectronicAtlasMap> mapList = LitePal.findAll(ElectronicAtlasMap.class);
-            Collections.sort(mapList);
-            for (int i = 0; i < mapList.size(); i++) {
-                ElectronicAtlasMap map = mapList.get(i);
-                if (map.getName().equals(ParentNodeName)){
-                    ParentNodeName = map.getParentNode();
-                    setTitle(ParentNodeName);
-                    toolbar.setTitle(ParentNodeName);
-                    mapCollectionType = map.getMapType();
-                    InitElectronicAtlasData();
-                    refreshRecyclerForElectronicAtlas();
-                    if (mapCollectionType == 0){
-                        floatingActionButton.setVisibility(View.GONE);
-                        FloatingActionButton Output_fab = (FloatingActionButton) findViewById(R.id.outputData_selectpage_ElectronicAtlas);
-                        Output_fab.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View view) {
-                                OutputBTFunction();
-                            }
-                        });
-                        Output_fab.setVisibility(View.VISIBLE);
-                    }
-                    else
-                    {
-                        FloatingActionButton Output_fab = (FloatingActionButton) findViewById(R.id.outputData_selectpage_ElectronicAtlas);
-                        Output_fab.setVisibility(View.GONE);
-                        floatingActionButton.setVisibility(View.VISIBLE);
-                        floatingActionButton.setElevation(100);
-                    }
-                    break;
-                }
-                else if (ParentNodeName.equals("")){
-                    mapCollectionType = 0;
-                    setTitle(select_page.this.getResources().getText(R.string.app_showname));
-                    toolbar.setTitle(select_page.this.getResources().getText(R.string.app_showname));
-                    InitElectronicAtlasData();
-                    refreshRecyclerForElectronicAtlas();
-                    if (mapCollectionType == 0){
-                        floatingActionButton.setVisibility(View.GONE);
-                        FloatingActionButton Output_fab = (FloatingActionButton) findViewById(R.id.outputData_selectpage_ElectronicAtlas);
-                        Output_fab.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View view) {
-                                OutputBTFunction();
-                            }
-                        });
-                        Output_fab.setVisibility(View.VISIBLE);
-                    }
-                    else
-                    {
-                        FloatingActionButton Output_fab = (FloatingActionButton) findViewById(R.id.outputData_selectpage_ElectronicAtlas);
-                        Output_fab.setVisibility(View.GONE);
-                        floatingActionButton.setVisibility(View.VISIBLE);
-                        floatingActionButton.setElevation(100);
-                    }
-                    break;
-                }
-            }
+//        if (!ParentNodeName.equals("")) {
+//            FloatingActionButton floatingActionButton = (FloatingActionButton) findViewById(R.id.BackFloatingActionButton);
+//            floatingActionButton.setElevation(100);
+//            List<ElectronicAtlasMap> mapList = LitePal.findAll(ElectronicAtlasMap.class);
+//            Collections.sort(mapList);
+//            for (int i = 0; i < mapList.size(); i++) {
+//                ElectronicAtlasMap map = mapList.get(i);
+//                if (map.getName().equals(ParentNodeName)){
+//                    ParentNodeName = map.getParentNode();
+//                    setTitle(ParentNodeName);
+//                    toolbar.setTitle(ParentNodeName);
+//                    mapCollectionType = map.getMapType();
+//                    InitElectronicAtlasData();
+//                    refreshRecyclerForElectronicAtlas();
+//                    if (mapCollectionType == 0){
+//                        floatingActionButton.setVisibility(View.GONE);
+//                        FloatingActionButton Output_fab = (FloatingActionButton) findViewById(R.id.outputData_selectpage_ElectronicAtlas);
+//                        Output_fab.setOnClickListener(new View.OnClickListener() {
+//                            @Override
+//                            public void onClick(View view) {
+//                                OutputBTFunction();
+//                            }
+//                        });
+//                        Output_fab.setVisibility(View.VISIBLE);
+//                    }
+//                    else
+//                    {
+//                        FloatingActionButton Output_fab = (FloatingActionButton) findViewById(R.id.outputData_selectpage_ElectronicAtlas);
+//                        Output_fab.setVisibility(View.GONE);
+//                        floatingActionButton.setVisibility(View.VISIBLE);
+//                        floatingActionButton.setElevation(100);
+//                    }
+//                    break;
+//                }
+//                else if (ParentNodeName.equals("")){
+//                    mapCollectionType = 0;
+//                    setTitle(select_page.this.getResources().getText(R.string.app_showname));
+//                    toolbar.setTitle(select_page.this.getResources().getText(R.string.app_showname));
+//                    InitElectronicAtlasData();
+//                    refreshRecyclerForElectronicAtlas();
+//                    if (mapCollectionType == 0){
+//                        floatingActionButton.setVisibility(View.GONE);
+//                        FloatingActionButton Output_fab = (FloatingActionButton) findViewById(R.id.outputData_selectpage_ElectronicAtlas);
+//                        Output_fab.setOnClickListener(new View.OnClickListener() {
+//                            @Override
+//                            public void onClick(View view) {
+//                                OutputBTFunction();
+//                            }
+//                        });
+//                        Output_fab.setVisibility(View.VISIBLE);
+//                    }
+//                    else
+//                    {
+//                        FloatingActionButton Output_fab = (FloatingActionButton) findViewById(R.id.outputData_selectpage_ElectronicAtlas);
+//                        Output_fab.setVisibility(View.GONE);
+//                        floatingActionButton.setVisibility(View.VISIBLE);
+//                        floatingActionButton.setElevation(100);
+//                    }
+//                    break;
+//                }
+//            }
+//        }
+        if (selectedNum != 0){
+            //isLongClick = 1;
+            refreshRecycler();
+            resetView();
         }
     }
 
@@ -2484,6 +2490,80 @@ public class select_page extends AppCompatActivity implements OnPageChangeListen
 
     private String ParentNodeName;
 
+
+    private void requestAuthority(){
+        List<String> permissionList = new ArrayList<>();
+        if (ContextCompat.checkSelfPermission(select_page.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
+            permissionList.add(Manifest.permission.ACCESS_FINE_LOCATION);
+        }
+        if (ContextCompat.checkSelfPermission(select_page.this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
+            permissionList.add(Manifest.permission.READ_EXTERNAL_STORAGE);
+        }
+        if (ContextCompat.checkSelfPermission(select_page.this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED){
+            permissionList.add(Manifest.permission.RECORD_AUDIO);
+        }
+        if (ContextCompat.checkSelfPermission(select_page.this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED){
+            permissionList.add(Manifest.permission.CAMERA);
+        }
+        if (ContextCompat.checkSelfPermission(select_page.this, Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED){
+            permissionList.add(Manifest.permission.READ_PHONE_STATE);
+        }
+        if (ContextCompat.checkSelfPermission(select_page.this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
+            permissionList.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        }
+        if (!permissionList.isEmpty()){
+            String[] permissions = permissionList.toArray(new String[permissionList.size()]);
+            ActivityCompat.requestPermissions(select_page.this, permissions, 118);
+        }else {
+
+            initRootDirectory();
+            instance = this;
+
+            //获取定位信息
+            getLocation();
+            //初始化界面一
+            doSpecificOperation();
+            //deleteAllData();
+            initPage();
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case 118:
+                if (grantResults.length > 0) {
+                    for (int result : grantResults) {
+                        if (result != PackageManager.PERMISSION_GRANTED) {
+                            Toast.makeText(this, select_page.this.getResources().getText(R.string.PermissionError), Toast.LENGTH_LONG).show();
+                            finish();
+                            return;
+                        }else {
+
+                            initRootDirectory();
+                            instance = this;
+
+                            //获取定位信息
+                            getLocation();
+                            //初始化界面一
+                            doSpecificOperation();
+                            //deleteAllData();
+                            initPage();
+                        }
+                    }
+                }
+                break;
+            default:
+        }
+    }
+
+    private void initRootDirectory(){
+        File file = new File(Environment.getExternalStorageDirectory() + "/TuZhi");
+        if (!file.exists() && !file.isDirectory()){
+            file.mkdirs();
+        }
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -2491,6 +2571,10 @@ public class select_page extends AppCompatActivity implements OnPageChangeListen
 
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        toolbar.setTitle(R.string.app_showname);
+
+        //requestAuthority();
 
         instance = this;
 
@@ -2501,7 +2585,8 @@ public class select_page extends AppCompatActivity implements OnPageChangeListen
         //deleteAllData();
         initPage();
 
-        toolbar.setTitle(R.string.app_showname);
+//        toolbar.setTitle(R.string.app_showname);
+
         /*if (LitePal.findAll(ElectronicAtlasMap.class).size() != 0){
             mapCollectionType = 0;
             InitElectronicAtlasData();

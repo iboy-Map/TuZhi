@@ -149,8 +149,8 @@ public class RecordAudioDialogFragment extends DialogFragment {
             //mPauseButton.setVisibility(View.GONE);
             mChronometerTime.stop();
             timeWhenPaused = 0;
-            Toast.makeText(getActivity(), "录音结束...", Toast.LENGTH_SHORT).show();
-            Toast.makeText(getActivity(), "录音已保存...", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getActivity(), "录音结束...正在保存...", Toast.LENGTH_LONG).show();
+            Toast.makeText(getActivity(), "录音已保存", Toast.LENGTH_SHORT).show();
 
             getActivity().stopService(intent);
             //allow the screen to turn off again once recording is finished

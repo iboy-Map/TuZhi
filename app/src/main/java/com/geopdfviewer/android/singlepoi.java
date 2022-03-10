@@ -129,6 +129,7 @@ public class singlepoi extends AppCompatActivity{
         textView_photonum = (TextView) findViewById(R.id.txt_photonumshow);
         textView_photonum.setVisibility(View.VISIBLE);
         textViewShowNum = (TextView) findViewById(R.id.txt_tapenumshow);
+        textViewShowNum.setVisibility(View.VISIBLE);
             setTitle("兴趣点信息");
             POIC = intent.getStringExtra("POIC");
             type_spinner = (Spinner) findViewById(R.id.type_selection);
@@ -407,7 +408,7 @@ public class singlepoi extends AppCompatActivity{
             public void onClick(View v) {
                 CacheDescription = editText_des.getText().toString();
                 CacheName = editText_name.getText().toString();
-                //打开图片列表
+                //打开视频列表
                 Intent intent1 = new Intent(singlepoi.this, VideoShow.class);
                 intent1.putExtra("POIC", POIC);
                 intent1.putExtra("type", 0);
@@ -438,8 +439,13 @@ public class singlepoi extends AppCompatActivity{
             @Override
             public void onClick(View v) {
                 try {
+                    getSharedPreferences("sp_name_audio", MODE_PRIVATE)
+                            .edit().clear()
+                            .apply();
+
                     final RecordAudioDialogFragment fragment = RecordAudioDialogFragment.newInstance();
                     fragment.show(getSupportFragmentManager(),RecordAudioDialogFragment.class.getSimpleName());
+
 
                     fragment.setOnCancelListener(new RecordAudioDialogFragment.OnAudioCancelListener() {
                         @Override
@@ -449,7 +455,7 @@ public class singlepoi extends AppCompatActivity{
                             SharedPreferences prefTape = getSharedPreferences("sp_name_audio",MODE_PRIVATE);
                             String TapePath = prefTape.getString("audio_path","");
 
-                            Log.w("audio_path_singlepoi: ",TapePath);
+                            Log.w("audio_path_singlepo: ",TapePath);
                             Uri uri = Uri.parse(TapePath);
                             List<POI> POIs = LitePal.where("poic = ?", POIC).find(POI.class);
                             POI poi = new POI();
@@ -730,6 +736,7 @@ public static  final int UPDATA_TEXT = 1;
         textView_time.setVisibility(View.VISIBLE);
         textView_time.setText(poi.getTime());
         Log.w(TAG, Integer.toString(tapes.size()));
+        textView_tapenum.setText(Integer.toString(tapes.size()));
         textView_photonum.setText(Integer.toString(photos.size()));
         textView_photonum.setVisibility(View.VISIBLE);
         textView_photonum.setOnClickListener(new View.OnClickListener() {
@@ -798,39 +805,45 @@ public static  final int UPDATA_TEXT = 1;
             @Override
             public void onClick(View v) {
                 try {
+                    getSharedPreferences("sp_name_audio", MODE_PRIVATE)
+                            .edit().clear()
+                            .apply();
+
                     final RecordAudioDialogFragment fragment = RecordAudioDialogFragment.newInstance();
                     fragment.show(getSupportFragmentManager(),RecordAudioDialogFragment.class.getSimpleName());
+                    fragment.setCancelable(false);
 
                     fragment.setOnCancelListener(new RecordAudioDialogFragment.OnAudioCancelListener() {
                         @Override
                         public void onCancel() {
                             fragment.dismiss();
+                            SharedPreferences prefTape = getSharedPreferences("sp_name_audio", MODE_PRIVATE);
+                            String TapePath = prefTape.getString("audio_path", "");
+                            Log.w("audio_path_singlepoii+", "py:" + TapePath);
 
-                            SharedPreferences prefTape = getSharedPreferences("sp_name_audio",MODE_PRIVATE);
-                            String TapePath = prefTape.getString("audio_path","");
-
-                            Log.w("audio_path_singlepoi: ",TapePath);
-                            Uri uri = Uri.parse(TapePath);
-                            List<POI> POIs = LitePal.where("poic = ?", POIC).find(POI.class);
-                            POI poi = new POI();
-                            poi.setTapenum(POIs.get(0).getTapenum() + 1);
-                            SimpleDateFormat simpleDateFormat = new SimpleDateFormat(singlepoi.this.getResources().getText(R.string.DateAndTime).toString());
-                            Date date = new Date(System.currentTimeMillis());
-                            poi.updateAll("poic = ?", POIC);
-                            MTAPE mtape = new MTAPE();
-                            mtape.setPath(TapePath);
-                            mtape.setPdfic(POIs.get(0).getIc());
-                            mtape.setPoic(POIC);
-                            mtape.setTime(simpleDateFormat.format(date));
-                            mtape.save();
-                            new Thread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    Message message = new Message();
-                                    message.what  = UPDATA_TEXT;
-                                    handler.sendMessage(message);
-                                }
-                            }).start();
+                            if (!TapePath.equals("")){
+                                Uri uri = Uri.parse(TapePath);
+                                List<POI> POIs = LitePal.where("poic = ?", POIC).find(POI.class);
+                                POI poi = new POI();
+                                poi.setTapenum(POIs.get(0).getTapenum() + 1);
+                                SimpleDateFormat simpleDateFormat = new SimpleDateFormat(singlepoi.this.getResources().getText(R.string.DateAndTime).toString());
+                                Date date = new Date(System.currentTimeMillis());
+                                poi.updateAll("poic = ?", POIC);
+                                MTAPE mtape = new MTAPE();
+                                mtape.setPath(TapePath);
+                                mtape.setPdfic(POIs.get(0).getIc());
+                                mtape.setPoic(POIC);
+                                mtape.setTime(simpleDateFormat.format(date));
+                                mtape.save();
+                                new Thread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Message message = new Message();
+                                        message.what = UPDATA_TEXT;
+                                        handler.sendMessage(message);
+                                    }
+                                }).start();
+                        }
                         }
                     });
 
@@ -1171,6 +1184,7 @@ public static  final int UPDATA_TEXT = 1;
             poi.setPhotonum(POIs.get(0).getVedionum() + 1);
             poi.updateAll("poic = ?", POIC);
             MVEDIO mvedio = new MVEDIO();
+            mvedio.setPdfic(POIs.get(0).getIc());//@@@@漏掉的一行
             mvedio.setPoic(POIC);
             mvedio.setPath(path);
             mvedio.setTime(simpleDateFormat.format(date));
@@ -1347,6 +1361,7 @@ public static  final int UPDATA_TEXT = 1;
                                 poi.setPhotonum(POIs.get(0).getPhotonum() + 1);
                                 poi.updateAll("poic = ?", POIC);
                                 MPHOTO mphoto = new MPHOTO();
+                                mphoto.setPdfic(POIs.get(0).getIc());//.....
                                 mphoto.setPoic(POIC);
                                 mphoto.setPath(imageuri);
                                 mphoto.setTime(simpleDateFormat.format(date));
@@ -1411,6 +1426,7 @@ public static  final int UPDATA_TEXT = 1;
                             poi.setPhotonum(POIs.get(0).getVedionum() + 1);
                             poi.updateAll("poic = ?", POIC);
                             MVEDIO mvedio = new MVEDIO();
+                            mvedio.setPdfic(POIs.get(0).getIc());//@@@@漏掉的一行
                             mvedio.setPoic(POIC);
                             mvedio.setPath(imageuri1);
                             mvedio.setTime(simpleDateFormat.format(date));
